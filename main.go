@@ -33,9 +33,9 @@ func main() {
 	activateService := service.NewActivate(otpRepo, userRepo)
 	activateHandle := handle.NewActivateHandle(activateService)
 
-	//tkRepo := repo.NewUser(db)
-	//tkService := service.NewUserService(tkRepo)
-	//tkHandle := handle.NewToken(tkService)
+	tkRepo := repo.NewUser(db)
+	tkService := service.NewUserService(tkRepo)
+	tkHandle := handle.NewToken(tkService)
 
 	//var test *testing.T
 	//token := token2.TestJWTMaker{test}
@@ -48,9 +48,10 @@ func main() {
 	r.HandleFunc("/users/register/otp", otpHandle.CreatUserOTPHandle).Methods("POST")
 	r.HandleFunc("/users/login", loginHandle.Login).Methods("POST")
 	r.HandleFunc("/users/login/active", activateHandle.Active).Methods("POST")
-	r.HandleFunc("/token", handle.CreatToken).Methods("POST")
-	r.HandleFunc("/verifyToken", handle.VerifyToken).Methods("GET")
-	r.HandleFunc("/refresh", handle.Refresh).Methods("POST")
+
+	r.HandleFunc("/token/{id}", tkHandle.CreatToken).Methods("POST")
+	r.HandleFunc("/verifyToken", tkHandle.VerifyToken).Methods("GET")
+	r.HandleFunc("/refresh", tkHandle.Refresh).Methods("POST")
 
 	r.HandleFunc("/create", token.Creat).Methods("POST")
 	r.HandleFunc("/verify", token.Verify).Methods("GET")

@@ -4,49 +4,52 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 var jwtKey = []byte("secretKey")
 
-//type User struct {
-//	userService UserService
-//}
+type TokenUser struct {
+	userService UserService
+}
 
-//func NewToken(userService UserService) *User {
-//	return &User{userService: userService}
-//}
-// thong tin can xac thuc
+func NewToken(userService UserService) *TokenUser {
+	return &TokenUser{userService: userService}
+}
+
 type Credentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
-
-// thong tin yeu cau
 type Claims struct {
 	Username string
 	jwt.StandardClaims
 }
 
-func CreatToken(w http.ResponseWriter, r *http.Request) {
-	//vars := mux.Vars(r)
-	//userID := vars["id"]
-	//id, error := strconv.ParseInt(userID, 10, 64)
-	//if error != nil {
-	//	fmt.Println("userID must be number: ", error.Error())
-	//	return
-	//}
-	//user, errs := lh.userService.GetDetailUser(id)
-	//if errs != nil {
-	//	fmt.Println("id is not valid: ", errs.Error())
-	//	return
-	//}
-	//json.NewEncoder(w).Encode(user)
-	//fmt.Println("", user)
-	var credentials Credentials
+func (th *TokenUser) CreatToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"]
+	id, er := strconv.ParseInt(userID, 10, 64)
+	if er != nil {
+		fmt.Println("userID must be number: ", er.Error())
+		return
+	}
+	user, errs := th.userService.GetDetailUser(id)
+	if errs != nil {
+		fmt.Println("id is not valid: ", errs.Error())
+		return
+	}
+	user1 := user.Username
+	pass1 := user.Password
+	credentials := &Credentials{
+		Username: user1,
+		Password: pass1,
+	}
 	var users = map[string]string{
-		//user.Username: user.Password,
+		user1:       pass1,
 		"user2":     "password2",
 		"thanh17b4": "22121992Th",
 	}
@@ -56,10 +59,9 @@ func CreatToken(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 	expectedPassword, ok := users[credentials.Username]
 	if !ok || expectedPassword != credentials.Password {
-		fmt.Println("password is not valid")
+		fmt.Println("password is not correct: ", err.Error())
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -79,30 +81,36 @@ func CreatToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
+		Name:     "token",
+		Value:    tokenString,
+		Expires:  expirationTime,
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
 	})
 	json.NewEncoder(w).Encode(tokenString)
 	return
 }
-func VerifyToken(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("token")
+func (th *TokenUser) VerifyToken(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("token")
 	if err != nil {
 		if err == http.ErrNoCookie {
+			fmt.Println("aa")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	tokenStr := c.Value
+	tokenStr := cookie.Value
 	claims := &Claims{}
 	tkn, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
+			fmt.Println("bb")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -110,16 +118,18 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !tkn.Valid {
+		fmt.Println("cc")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	w.Write([]byte(fmt.Sprintf("Welcome %s!", claims.Username)))
 }
 
-func Refresh(w http.ResponseWriter, r *http.Request) {
+func (th *TokenUser) Refresh(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("token")
 	if err != nil {
 		if err == http.ErrNoCookie {
+			fmt.Println("dd")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -143,7 +153,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 90*time.Second {
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 30*time.Second {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"massage": "time is over",
@@ -158,6 +168,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	json.NewEncoder(w).Encode(tokenString)
 	http.SetCookie(w, &http.Cookie{
 		Name:    "refresh_token",
 		Value:   tokenString,

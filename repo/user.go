@@ -41,7 +41,7 @@ func (u *User) DetailUser(userID int64) (*model.User, error) {
 		fmt.Println("id is not available: ", err.Error())
 		return nil, err
 	}
-	defer u.db.Close()
+	//defer u.db.Close()
 	//fmt.Println("", user)
 	return user, nil
 }
