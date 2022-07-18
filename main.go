@@ -24,7 +24,8 @@ func main() {
 	userHandle := handle.NewUserHandle(userService)
 
 	otpRepo := repo.NewOtp(db)
-	otpService := service.NewOtpService(otpRepo)
+	newUserRepo := repo.NewUser(db)
+	otpService := service.NewOtpService(newUserRepo, otpRepo)
 	otpHandle := handle.NewOtpHandle(otpService)
 
 	loginService := service.NewLogin(otpRepo, userRepo)
@@ -45,6 +46,7 @@ func main() {
 	r.HandleFunc("/users/{id}", userHandle.UpdateUserHandle).Methods("PUT")
 	r.HandleFunc("/users/register", userHandle.CreatUserHandle).Methods("POST")
 	r.HandleFunc("/users/{id}", userHandle.DeleteUserHandle).Methods("DELETE")
+
 	r.HandleFunc("/users/register/otp", otpHandle.CreatUserOTPHandle).Methods("POST")
 	r.HandleFunc("/users/login", loginHandle.Login).Methods("POST")
 	r.HandleFunc("/users/login/active", activateHandle.Active).Methods("POST")

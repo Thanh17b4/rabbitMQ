@@ -35,8 +35,8 @@ func (u *User) ListUser(page int64, limit int64) ([]*model.User, error) {
 
 func (u *User) DetailUser(userID int64) (*model.User, error) {
 	user := &model.User{}
-	row := u.db.QueryRow(" SELECT id, name, address, username, password FROM users WHERE id = ?", userID)
-	err := row.Scan(&user.ID, &user.Name, &user.Address, &user.Username, &user.Password)
+	row := u.db.QueryRow(" SELECT id, name, address, username, password, email FROM users WHERE id = ?", userID)
+	err := row.Scan(&user.ID, &user.Name, &user.Address, &user.Username, &user.Password, &user.Email)
 	if err != nil {
 		fmt.Println("id is not available: ", err.Error())
 		return nil, err

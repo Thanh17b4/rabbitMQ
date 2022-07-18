@@ -15,7 +15,7 @@ func NewOtp(db *sql.DB) *OtpRepo {
 }
 func (o *OtpRepo) CreatOTP(otp *model.UserOTP) (*model.UserOTP, error) {
 	result, err := o.db.Exec("INSERT INTO users_otp ( user_id, code, expired_at) VALUES (? , ?, ?)", otp.UserID, otp.OTP, otp.Expired)
-	fmt.Println("cc:", otp.Expired)
+	fmt.Println("expirationTime:", otp.Expired)
 	if err != nil {
 		fmt.Println("had an error with creating OTP: ", err.Error())
 		return nil, err
