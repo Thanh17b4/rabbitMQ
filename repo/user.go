@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	//"golang.org/x/crypto/bcrypt"
-	model "practice/model"
+	model "github.com/Thanh17b4/practice/model"
 )
 
 type User struct {

@@ -4,7 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	//goMail "gopkg.in/mail.v2"
 	//"math/rand"
-	model "practice/model"
+	model "github.com/Thanh17b4/practice/model"
 	//"time"
 )
 

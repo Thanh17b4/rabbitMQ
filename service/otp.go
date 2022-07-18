@@ -3,9 +3,9 @@ package service
 import (
 	"crypto/tls"
 	"fmt"
+	model "github.com/Thanh17b4/practice/model"
 	goMail "gopkg.in/mail.v2"
 	"math/rand"
-	model "practice/model"
 	"time"
 )
 

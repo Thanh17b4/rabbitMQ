@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	model "practice/model"
+	model "github.com/Thanh17b4/practice/model"
 	"time"
 )
 

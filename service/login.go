@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
+	model "github.com/Thanh17b4/practice/model"
 	"golang.org/x/crypto/bcrypt"
-	model "practice/model"
 )
 
 type LoginService struct {

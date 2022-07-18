@@ -3,14 +3,13 @@ package main
 import (
 	_ "database/sql"
 	"fmt"
+	"github.com/Thanh17b4/practice/db"
+	"github.com/Thanh17b4/practice/handler"
+	"github.com/Thanh17b4/practice/repo"
+	"github.com/Thanh17b4/practice/service"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"practice/db"
-	"practice/handle"
-	"practice/repo"
-	"practice/service"
-	"practice/token"
 )
 
 func main() {
@@ -21,22 +20,22 @@ func main() {
 	}
 	userRepo := repo.NewUser(db)
 	userService := service.NewUserService(userRepo)
-	userHandle := handle.NewUserHandle(userService)
+	userHandle := handler.NewUserHandle(userService)
 
 	otpRepo := repo.NewOtp(db)
 	newUserRepo := repo.NewUser(db)
 	otpService := service.NewOtpService(newUserRepo, otpRepo)
-	otpHandle := handle.NewOtpHandle(otpService)
+	otpHandle := handler.NewOtpHandle(otpService)
 
 	loginService := service.NewLogin(otpRepo, userRepo)
-	loginHandle := handle.NewLoginHandle(loginService)
+	loginHandle := handler.NewLoginHandle(loginService)
 
 	activateService := service.NewActivate(otpRepo, userRepo)
-	activateHandle := handle.NewActivateHandle(activateService)
+	activateHandle := handler.NewActivateHandle(activateService)
 
 	tkRepo := repo.NewUser(db)
 	tkService := service.NewUserService(tkRepo)
-	tkHandle := handle.NewToken(tkService)
+	tkHandle := handler.NewToken(tkService)
 
 	//var test *testing.T
 	//token := token2.TestJWTMaker{test}
@@ -55,11 +54,8 @@ func main() {
 	r.HandleFunc("/verifyToken", tkHandle.VerifyToken).Methods("GET")
 	r.HandleFunc("/refresh", tkHandle.Refresh).Methods("POST")
 
-	r.HandleFunc("/create", token.Creat).Methods("POST")
-	r.HandleFunc("/verify", token.Verify).Methods("GET")
-	r.HandleFunc("/refresh1", token.Refresh).Methods("POST")
 	//r.HandleFunc("/token", tkHandle.LoginToken).Methods("POST")
-	//r.HandleFunc("/users/login/home", handle.Home).Methods("GET")
+	//r.HandleFunc("/users/login/home", handler.Home).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":4000", r))
 }

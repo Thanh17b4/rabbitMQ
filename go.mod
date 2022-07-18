@@ -1,4 +1,4 @@
-module practice
+module github.com/Thanh17b4/practice
 
 go 1.17
 

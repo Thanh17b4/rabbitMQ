@@ -3,7 +3,7 @@ package repo
 import (
 	"database/sql"
 	"fmt"
-	model "practice/model"
+	model "github.com/Thanh17b4/practice/model"
 )
 
 type OtpRepo struct {
