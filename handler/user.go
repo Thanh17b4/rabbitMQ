@@ -3,12 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	model "github.com/Thanh17b4/practice/model"
-	"github.com/Thanh17b4/practice/responses"
-	"github.com/go-chi/chi/v5"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	model "github.com/Thanh17b4/practice/model"
+	"github.com/Thanh17b4/practice/responses"
+	"github.com/go-chi/chi/v5"
 )
 
 type UserService interface {
@@ -85,7 +86,6 @@ func (h UserHandle) UpdateUserHandle(w http.ResponseWriter, r *http.Request) {
 	})
 }
 func (h UserHandle) DeleteUserHandle(w http.ResponseWriter, r *http.Request) {
-
 	userID := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
