@@ -2,7 +2,8 @@ package repo
 
 import (
 	"database/sql"
-	"fmt"
+	"github.com/pkg/errors"
+
 	//"golang.org/x/crypto/bcrypt"
 	model "github.com/Thanh17b4/practice/model"
 )
@@ -20,13 +21,13 @@ func (u *User) ListUser(page int64, limit int64) ([]*model.User, error) {
 	offset := (page - 1) * limit
 	result, err := u.db.Query("SELECT id, name, address FROM users LIMIT ? OFFSET ?", limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not get list user from database")
 	}
 	for result.Next() {
 		u := &model.User{}
 		err := result.Scan(&u.ID, &u.Name, &u.Address)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "could not scan user information")
 		}
 		users = append(users, u)
 	}
@@ -38,54 +39,43 @@ func (u *User) DetailUser(userID int64) (*model.User, error) {
 	row := u.db.QueryRow(" SELECT id, name, address, username, password, email FROM users WHERE id = ?", userID)
 	err := row.Scan(&user.ID, &user.Name, &user.Address, &user.Username, &user.Password, &user.Email)
 	if err != nil {
-		fmt.Println("id is not available: ", err.Error())
-		return nil, err
+		return nil, errors.Wrap(err, "could not get user from database")
 	}
-	//defer u.db.Close()
-	//fmt.Println("", user)
 	return user, nil
 }
 
-func (u *User) UpdateUser(user *model.User) *model.User {
+func (u *User) UpdateUser(user *model.User) (*model.User, error) {
 	_, err := u.db.Exec(" UPDATE users SET name = ?, address = ?, activated = ? WHERE id = ?", &user.Name, &user.Address, &user.Activated, user.ID)
 	if err != nil {
-		fmt.Println("can not connect to SQL: ", err.Error())
+		return nil, errors.Wrap(err, "user's information is invalidate")
 	}
 	defer u.db.Close()
-	return user
+	return user, nil
 }
 func (u *User) Delete(userID int64) (int64, error) {
-	row, err := u.db.Exec("DELETE FROM users WHERE id = ?", userID)
+	_, err := u.db.Exec("DELETE FROM users WHERE id = ?", userID)
 	if err != nil {
-		fmt.Println("can not connect to SQL: ", err.Error())
+		return 0, errors.Wrap(err, "userID is not correct")
 	}
-	result, err := row.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-	return result, nil
+	return userID, nil
 }
 
 func (u *User) Creat(user *model.User) (*model.User, error) {
-	result, err := u.db.Exec("INSERT INTO users ( name, email, address, password) VALUES (? , ?, ?, ?)", user.Name, user.Email, user.Address, user.Password)
+	_, err := u.db.Exec("INSERT INTO users ( name, email, address, password) VALUES (? , ?, ?, ?)", user.Name, user.Email, user.Address, user.Password)
 	if err != nil {
-		fmt.Println("had error: ", err.Error())
-		return nil, err
+		return nil, errors.Wrap(err, "could not creat new user")
 	}
-	insertID, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("inserted userID: ", insertID)
 	return user, nil
 }
-func (u *User) GetUserByEmail(email string) *model.User {
+func (u *User) GetUserByEmail(email string) (*model.User, error) {
 	user := &model.User{}
 	row := u.db.QueryRow(" SELECT id, name, address, password, activated, email FROM users WHERE email = ?", email)
 	err := row.Scan(&user.ID, &user.Name, &user.Address, &user.Password, &user.Activated, &user.Email)
 	if err != nil {
-		fmt.Println("could not get user information: ", err.Error())
-		return nil
+		return nil, errors.Wrap(err, "email is not correct, please try again")
 	}
-	return user
+	return user, nil
 }

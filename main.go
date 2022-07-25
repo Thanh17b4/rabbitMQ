@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"github.com/Thanh17b4/practice/db"
 	"github.com/Thanh17b4/practice/handler"
+	"github.com/Thanh17b4/practice/middleware"
 	"github.com/Thanh17b4/practice/repo"
 	"github.com/Thanh17b4/practice/service"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 )
@@ -33,29 +34,23 @@ func main() {
 	activateService := service.NewActivate(otpRepo, userRepo)
 	activateHandle := handler.NewActivateHandle(activateService)
 
-	tkRepo := repo.NewUser(db)
-	tkService := service.NewUserService(tkRepo)
-	tkHandle := handler.NewToken(tkService)
+	r := chi.NewRouter()
+	r.Post("/users/login", loginHandle.Login)
 
-	//var test *testing.T
-	//token := token2.TestJWTMaker{test}
-	r := mux.NewRouter()
-	r.HandleFunc("/users", userHandle.GetListUser).Methods("GET")
-	r.HandleFunc("/users/{id}", userHandle.GetDetailUserHandle).Methods("GET")
-	r.HandleFunc("/users/{id}", userHandle.UpdateUserHandle).Methods("PUT")
-	r.HandleFunc("/users/register", userHandle.CreatUserHandle).Methods("POST")
-	r.HandleFunc("/users/{id}", userHandle.DeleteUserHandle).Methods("DELETE")
+	r.Route("/token", func(r chi.Router) {
+		r.With(middleware.RequestToken).Route("/users", func(r chi.Router) {
+			r.Put("/{id}", userHandle.UpdateUserHandle)
+			r.Get("/", userHandle.GetListUser)
+			r.Get("/{id}", userHandle.GetDetailUserHandle)
+			r.Delete("/{id}", userHandle.DeleteUserHandle)
+			r.Post("/refresh", loginHandle.Refresh)
 
-	r.HandleFunc("/users/register/otp", otpHandle.CreatUserOTPHandle).Methods("POST")
-	r.HandleFunc("/users/login", loginHandle.Login).Methods("POST")
-	r.HandleFunc("/users/login/active", activateHandle.Active).Methods("POST")
+		})
+	})
 
-	r.HandleFunc("/token/{id}", tkHandle.CreatToken).Methods("POST")
-	r.HandleFunc("/verifyToken", tkHandle.VerifyToken).Methods("GET")
-	r.HandleFunc("/refresh", tkHandle.Refresh).Methods("POST")
-
-	//r.HandleFunc("/token", tkHandle.LoginToken).Methods("POST")
-	//r.HandleFunc("/users/login/home", handler.Home).Methods("GET")
+	r.Post("/users/register", userHandle.CreatUserHandle)
+	r.Post("/users/register/otp", otpHandle.CreatUserOTPHandle)
+	r.Post("/users/login/active", activateHandle.Active)
 
 	log.Fatal(http.ListenAndServe(":4000", r))
 }

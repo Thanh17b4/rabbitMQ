@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	model "github.com/Thanh17b4/practice/model"
+	"github.com/pkg/errors"
 	goMail "gopkg.in/mail.v2"
 	"math/rand"
 	"time"
@@ -11,7 +12,7 @@ import (
 
 type OtpRepo interface {
 	CreatOTP(otp *model.UserOTP) (*model.UserOTP, error)
-	GetOTP(userID int) *model.UserOTP
+	GetOTP(userID int) (*model.UserOTP, error)
 }
 type OtpService struct {
 	userRepo UserRepo
@@ -43,13 +44,11 @@ func (s OtpService) CreatOTPs(otp *model.UserOTP) (*model.UserOTP, error) {
 	otp.Expired = otp.CreatAt.Add(time.Second * 300)
 	min, max := 100000, 999999
 	code := rand.Intn(max-min) + min
-
-	fmt.Println("code ", code)
+	
 	otp.OTP = code
 	user, err := s.userRepo.DetailUser(int64(otp.UserID))
 	if err != nil {
-		fmt.Println("userID is not valid: ")
-		return nil, err
+		return nil, errors.Wrap(err, "userID is not valid ")
 	}
 	receive := user.Email
 	name := user.Name
@@ -57,6 +56,6 @@ func (s OtpService) CreatOTPs(otp *model.UserOTP) (*model.UserOTP, error) {
 	s.sendEmail(int64(code), "test send email", receive, name)
 	return s.otpRepo.CreatOTP(otp)
 }
-func (s OtpService) GetOTPs(userID int) *model.UserOTP {
+func (s OtpService) GetOTPs(userID int) (*model.UserOTP, error) {
 	return s.otpRepo.GetOTP(userID)
 }

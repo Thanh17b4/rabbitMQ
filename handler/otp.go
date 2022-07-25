@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	model "github.com/Thanh17b4/practice/model"
+	"github.com/Thanh17b4/practice/responses"
 	"io/ioutil"
 	"net/http"
 )
@@ -23,18 +23,16 @@ func (h OtpHandle) CreatUserOTPHandle(w http.ResponseWriter, r *http.Request) {
 	var userOTP *model.UserOTP
 	err := json.Unmarshal(reqBody, &userOTP)
 	if err != nil {
-		fmt.Println(" can not marshal your request: ", err.Error())
+		responses.Error(w, 400, "Could not marshal your request")
 		return
 	}
 
 	userOtp, err := h.otpService.CreatOTPs(userOTP)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": err.Error(),
-		})
+		responses.Error(w, 400, "Could not creat userOTP")
 		return
 	}
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"register successfully": userOtp,
+	responses.Success(w, map[string]interface{}{
+		"userOtp": userOtp,
 	})
 }

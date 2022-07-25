@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
 	ID        int     `json:"id"`
@@ -19,3 +21,5 @@ type UserOTP struct {
 	Expired time.Time `json:"expired"`
 	CreatAt time.Time `json:"creatAt"`
 }
+
+

@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	model "github.com/Thanh17b4/practice/model"
+	"github.com/Thanh17b4/practice/responses"
 	"io/ioutil"
 	"net/http"
 )
@@ -27,21 +27,16 @@ func (lh ActivateHandle) Active(w http.ResponseWriter, r *http.Request) {
 	req := &Req{}
 	err := json.Unmarshal(reqBody, req)
 	if err != nil {
-		fmt.Println("could not marshal your request: ", err.Error())
+		responses.Error(w, http.StatusBadRequest, "could not marshal your request")
 		return
 	}
 	user, err := lh.activateService.Activate(req.Code, req.Email)
-	fmt.Println("req: ", req.Code, req.Email)
 	if err != nil {
-		fmt.Println("had an error: ", err.Error())
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"massage": err.Error(),
-		})
+		responses.Error(w, 400, "Email or OTP is not correct")
 		return
 	}
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"massage": "login successfully",
+	responses.Success(w, map[string]interface{}{
+		"Activate successfully, hello": user.Name,
 	})
-	json.NewEncoder(w).Encode(user)
 	return
 }

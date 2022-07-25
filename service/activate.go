@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	model "github.com/Thanh17b4/practice/model"
 	"time"
 )
@@ -16,18 +15,15 @@ func NewActivate(otpRepo OtpRepo, userRepo UserRepo) *ActivateService {
 	return &ActivateService{otpRepo: otpRepo, userRepo: userRepo}
 }
 func (l *ActivateService) Activate(code int, email string) (u *model.User, err error) {
-	user := l.userRepo.GetUserByEmail(email)
-	fmt.Println("user: ", user)
+	user, err := l.userRepo.GetUserByEmail(email)
 	if user == nil {
 		return nil, errors.New("email is not valid")
 	}
-	userOtp := l.otpRepo.GetOTP(user.ID)
-	//fmt.Println("userOtp: ", userOtp)
-	if userOtp == nil {
-		return nil, errors.New("userOtp is not available")
+	userOtp, err := l.otpRepo.GetOTP(user.ID)
+	if err != nil {
+		return nil, errors.New("userID is not valid")
 	}
 	if code != userOtp.OTP {
-		fmt.Println("OTP is not correct: ")
 		return nil, errors.New("OTP is not correct")
 	}
 	t := time.Now()
