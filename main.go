@@ -3,22 +3,24 @@ package main
 import (
 	_ "database/sql"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/Thanh17b4/practice/db"
 	"github.com/Thanh17b4/practice/handler"
 	"github.com/Thanh17b4/practice/middleware"
 	"github.com/Thanh17b4/practice/repo"
 	"github.com/Thanh17b4/practice/service"
 	"github.com/go-chi/chi/v5"
-	"log"
-	"net/http"
 )
 
 func main() {
-	sqlDns := "root:nhatminh21@tcp(165.22.245.167:13306)/backend?parseTime=true"
+	sqlDns := "root:go+2022@tcp(139.162.50.72:13306)/token_service?parseTime=true"
 	db, err := db.NewDB(sqlDns)
 	if err != nil {
 		fmt.Println("can not connect to database:", err.Error())
 	}
+
 	userRepo := repo.NewUser(db)
 	userService := service.NewUserService(userRepo)
 	userHandle := handler.NewUserHandle(userService)
@@ -49,7 +51,7 @@ func main() {
 	})
 
 	r.Post("/users/register", userHandle.CreatUserHandle)
-	r.Post("/users/register/otp", otpHandle.CreatUserOTPHandle)
+	r.Post("/users_otp/register/otp", otpHandle.CreatUserOTPHandle)
 	r.Post("/users/login/active", activateHandle.Active)
 
 	log.Fatal(http.ListenAndServe(":4000", r))

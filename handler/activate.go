@@ -2,14 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	model "github.com/Thanh17b4/practice/model"
-	"github.com/Thanh17b4/practice/responses"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/Thanh17b4/practice/handler/responses"
 )
 
 type ActivateService interface {
-	Activate(code int, email string) (u *model.User, err error)
+	Activate(code int, email string) (u string, err error)
 }
 type ActivateHandle struct {
 	activateService ActivateService
@@ -27,16 +27,16 @@ func (lh ActivateHandle) Active(w http.ResponseWriter, r *http.Request) {
 	req := &Req{}
 	err := json.Unmarshal(reqBody, req)
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, "could not marshal your request")
+		responses.Error(w, r, http.StatusBadRequest, err, "could not marshal your request")
 		return
 	}
-	user, err := lh.activateService.Activate(req.Code, req.Email)
+	_, err = lh.activateService.Activate(req.Code, req.Email)
 	if err != nil {
-		responses.Error(w, 400, "Email or OTP is not correct")
+		responses.Error(w, r, 400, err, "Email or OTP is not correct")
 		return
 	}
-	responses.Success(w, map[string]interface{}{
-		"Activate successfully, hello": user.Name,
+	responses.Success(w, r, http.StatusAccepted, map[string]interface{}{
+		"Activate successfully": "Welcome",
 	})
 	return
 }

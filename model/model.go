@@ -5,15 +5,15 @@ import (
 )
 
 type User struct {
-	ID        int     `json:"id"`
-	Name      string  `json:"name"`
-	Email     string  `json:"email"`
-	Protected bool    `json:"protected"`
-	Banned    bool    `json:"banned"`
-	Activated int     `json:"activated"`
-	Address   *string `json:"address"`
-	Password  string  `json:"password"`
-	Username  string  `json:"username"`
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Protected int    `json:"protected"`
+	Banned    int    `json:"banned"`
+	Activated int    `json:"activated"`
+	Address   string `json:"address"`
+	Password  string `json:"password"`
+	Username  string `json:"username"`
 }
 type UserOTP struct {
 	UserID  int       `json:"userID"`
@@ -22,4 +22,4 @@ type UserOTP struct {
 	CreatAt time.Time `json:"creatAt"`
 }
 
-
+var Token string
