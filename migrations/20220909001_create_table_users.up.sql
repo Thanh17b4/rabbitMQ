@@ -10,11 +10,12 @@ CREATE TABLE users (
         username  varchar(255) NOT NULL,
                    PRIMARY KEY (id),
             CONSTRAINT users_email_unique UNIQUE(email)
-)
+);
+
 CREATE TABLE users_otp (
     user_id int(10) NOT NULL,
     otp int(6) NOT NULL,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expired_at timestamp NOT NULL,
+    expired_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
 )

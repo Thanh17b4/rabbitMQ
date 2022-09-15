@@ -29,10 +29,10 @@ func (s OtpService) sendEmail(code int64, subject string, receive string, name s
 	m.SetHeader("From", "thanhpv@vmodev.com")
 	m.SetHeader("To", receive)
 	m.SetHeader("Subject", subject)
-	msg := fmt.Sprintf("Hello: %s 様, here is your code: %d", name, code)
+	msg := fmt.Sprintf("Hello %s 様, here is your code: %d", name, code)
 	m.SetBody("text/plain", msg)
 	// Settings for SMTP server
-	d := goMail.NewDialer("smtp.gmail.com", 587, "thanhpv@vmodev.com", "qxpkehhtatnwzzok")
+	d := goMail.NewDialer("smtp.gmail.com", 587, "thanhpv@vmodev.com", "yenqoepplszlvaqw")
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	if err := d.DialAndSend(m); err != nil {
 		fmt.Println(err)
@@ -55,7 +55,7 @@ func (s OtpService) CreatOTPs(userOTP *model.UserOTP) (*model.UserOTP, error) {
 	receive := user.Email
 	name := user.Name
 	// send email
-	s.sendEmail(int64(code), "test send email", receive, name)
+	s.sendEmail(int64(code), "tests send email", receive, name)
 	return s.otpRepo.CreatOTP(userOTP)
 }
 

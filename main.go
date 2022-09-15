@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	sqlDns := "root:go+2022@tcp(139.162.50.72:13306)/token_service?parseTime=true"
+	sqlDns := "root:221292@tcp(localhost:13306)/token_service?parseTime=true"
 	db, err := db.NewDB(sqlDns)
 	if err != nil {
 		fmt.Println("can not connect to database:", err.Error())

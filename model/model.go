@@ -17,7 +17,7 @@ type User struct {
 }
 type UserOTP struct {
 	UserID  int       `json:"userID"`
-	OTP     int       `json:"OTP"`
+	OTP     int       `json:"otp"`
 	Expired time.Time `json:"expired"`
 	CreatAt time.Time `json:"creatAt"`
 }

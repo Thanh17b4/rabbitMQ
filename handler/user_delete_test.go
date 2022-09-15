@@ -1,4 +1,4 @@
-package handler_test
+package handler
 
 import (
 	"context"
@@ -8,22 +8,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Thanh17b4/practice/handler"
-
-	"github.com/Thanh17b4/practice/model"
-
-	"github.com/go-chi/chi/v5"
-
-	"github.com/stretchr/testify/mock"
-
-	"github.com/stretchr/testify/assert"
-
+	//"github.com/Thanh17b4/practice/model"
 	"github.com/Thanh17b4/practice/tests/mocks"
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestUserHandle_GetDetailUserHandle(t *testing.T) {
+func TestUserHandle_DeleteUserHandle(t *testing.T) {
 	userService := new(mocks.UserService)
-	userHandler := handler.NewUserHandle(userService)
+	userHandler := NewUserHandle(userService)
 
 	t.Run("type userID incorrect", func(t *testing.T) {
 
@@ -35,7 +29,7 @@ func TestUserHandle_GetDetailUserHandle(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
-		userHandler.GetDetailUserHandle(w, req)
+		userHandler.DeleteUserHandle(w, req)
 
 		got := w.Body.String()
 		want := fmt.Sprint(`{"error":{"code":400, "error":"strconv.ParseInt: parsing \"a\": invalid syntax", "massage":"userID must be number"}}`)
@@ -55,11 +49,11 @@ func TestUserHandle_GetDetailUserHandle(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
-		userService.On("GetDetailUser", mock.Anything).Return(nil, errors.New("userID is not correct: sql: no rows in result set")).Once()
-		userHandler.GetDetailUserHandle(w, req)
+		userService.On("DeleteUser", mock.Anything).Return(int64(0), errors.New("userID is not correct: sql: no rows in result set")).Once()
+		userHandler.DeleteUserHandle(w, req)
 
 		got := w.Body.String()
-		want := fmt.Sprint(`{"error":{"code":400, "error":"userID is not correct: sql: no rows in result set", "massage":"could not get user"}}`)
+		want := fmt.Sprint(`{"error":{"code":400, "error":"userID is not correct: sql: no rows in result set", "massage":"Could not delete user"}}`)
 
 		fmt.Println("aa:", w.Body.String())
 		assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -74,21 +68,11 @@ func TestUserHandle_GetDetailUserHandle(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 
-		userService.On("GetDetailUser", mock.Anything).Return(&model.User{
-			ID:        36,
-			Name:      "Thanhabc1",
-			Email:     "thanhpham96@gmail.com",
-			Protected: 0,
-			Banned:    0,
-			Activated: 0,
-			Address:   "China",
-			Password:  "",
-			Username:  "thanh24",
-		}, nil)
-		userHandler.GetDetailUserHandle(w, req)
+		userService.On("DeleteUser", mock.Anything).Return(int64(36), nil)
+		userHandler.DeleteUserHandle(w, req)
 
 		got := w.Body.String()
-		want := fmt.Sprint(`{"data":{"id":36,"name":"Thanhabc1","email":"thanhpham96@gmail.com","protected":0,"banned":0,"activated":0,"address":"China","password":"","username":"thanh24"}}`)
+		want := fmt.Sprint(`{"data":"userID 36 has been deleted"}`)
 		fmt.Println("bb:", w.Body.String())
 		assert.Equal(t, http.StatusAccepted, w.Code)
 		assert.JSONEq(t, want, got)

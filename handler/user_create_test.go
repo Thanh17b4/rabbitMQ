@@ -3,19 +3,19 @@ package handler_test
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/Thanh17b4/practice/model"
-
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/Thanh17b4/practice/handler"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Thanh17b4/practice/handler"
 	"github.com/Thanh17b4/practice/tests/mocks"
 )
 
@@ -23,7 +23,7 @@ func TestUserHandle_CreatUserHandle(t *testing.T) {
 	userService := new(mocks.UserService)
 	userHandler := handler.NewUserHandle(userService)
 	t.Run("marshal request get failed", func(t *testing.T) {
-		body := bytes.NewBufferString(`"test": "abc-xyz"`)
+		body := bytes.NewBufferString(`"tests": "abc-xyz"`)
 		req := httptest.NewRequest("POST", "/todos", body)
 		req.Header.Set("Content-Type", "application/json")
 		ctx := req.Context()
@@ -32,25 +32,23 @@ func TestUserHandle_CreatUserHandle(t *testing.T) {
 
 		userHandler.CreatUserHandle(w, req)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
-		//userService.AssertExpectations(t)
 		expectedResponse := fmt.Sprint(`{"error":{"code":400, "error":"invalid character ':' after top-level value", "massage":"could not marshal your rq"}}`)
 		fmt.Println("aa:", w.Body.String())
 		assert.JSONEq(t, expectedResponse, w.Body.String())
 	})
 	t.Run("Create user failed", func(t *testing.T) {
 		body := bytes.NewBufferString(`{"title": "task1"}`)
-		req := httptest.NewRequest("POST", "/todos", body)
+		req := httptest.NewRequest("POST", "/users/register", body)
 		req.Header.Set("Content-Type", "application/json")
 
 		req = req.WithContext(context.Background())
 		w := httptest.NewRecorder()
 
-		userService.On("CreateUser", mock.Anything).Return(nil, errors.New("could not create user")).Once()
+		userService.On("CreateUser", mock.Anything).Return(nil, errors.New("required field can not empty")).Once()
 
 		userHandler.CreatUserHandle(w, req)
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		userService.AssertExpectations(t)
-		expectedResponse := fmt.Sprint(`{"error":{"code":500, "error":"could not create user", "massage":"could not creat user"}}`)
+		expectedResponse := fmt.Sprint(`{"error":{"code":500, "error":"required field can not empty", "massage":"could not creat user, userID invalid"}}`)
 		assert.JSONEq(t, expectedResponse, w.Body.String())
 	})
 	t.Run("Create user success", func(t *testing.T) {

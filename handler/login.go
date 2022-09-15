@@ -60,6 +60,9 @@ func (lh LoginHandle) Refresh(w http.ResponseWriter, r *http.Request) {
 	newToken, err := lh.loginService.Refresh(realToken)
 	if err != nil {
 		responses.Error(w, r, http.StatusUnauthorized, err, "Could not refresh token")
+		return
 	}
-	responses.Success(w, r, http.StatusAccepted, newToken)
+	responses.Success(w, r, http.StatusOK, map[string]interface{}{
+		"NewToken": newToken,
+	})
 }

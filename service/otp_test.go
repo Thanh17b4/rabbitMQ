@@ -27,11 +27,11 @@ func TestOtpService_CreatOTPs(t *testing.T) {
 			Expired: time.Now().Add(10000),
 			CreatAt: time.Now(),
 		}
-		userRepo.On("DetailUser", mock.Anything).Once().Return(nil, errors.New("test error"))
+		userRepo.On("DetailUser", mock.Anything).Once().Return(nil, errors.New("tests error"))
 		got, err := otpService.CreatOTPs(&userOTP)
 		assert.Error(t, err)
 		assert.Nil(t, got)
-		assert.Equal(t, "userID is not valid: test error", err.Error())
+		assert.Equal(t, "userID is not valid: tests error", err.Error())
 	})
 
 	t.Run("CreatOTP got failed", func(t *testing.T) {
@@ -46,12 +46,12 @@ func TestOtpService_CreatOTPs(t *testing.T) {
 			Email: "chipv.bka@gmail.com",
 			Name:  "Test",
 		}, nil)
-		otpRepo.On("CreatOTP", mock.Anything).Once().Return(nil, errors.New("test failed"))
+		otpRepo.On("CreatOTP", mock.Anything).Once().Return(nil, errors.New("tests failed"))
 
 		got, err := otpService.CreatOTPs(&userOTP)
 		assert.Error(t, err)
 		assert.Nil(t, got)
-		assert.Equal(t, "test failed", err.Error())
+		assert.Equal(t, "tests failed", err.Error())
 	})
 	t.Run("CreatOTP got success", func(t *testing.T) {
 		otpService := service.NewOtpService(userRepo, otpRepo)
@@ -83,14 +83,15 @@ var otpService = service.NewOtpService(userRepo, otpRepo)
 func TestOtpService_GetOTPs(t *testing.T) {
 	t.Run("Get OTP get failed", func(t *testing.T) {
 		otpService := service.NewOtpService(userRepo, otpRepo)
-		otpRepo.On("GetUserOTP", mock.Anything).Once().Return(nil, errors.New("had an test error"))
-		userOtp := model.UserOTP{
+		otpRepo.On("GetUserOTP", mock.Anything).Once().Return(nil, errors.New("had an tests error"))
+		otp := model.UserOTP{
 			UserID: 5,
 		}
+		userOtp := otp
 		got, err := otpService.GetOTPs(userOtp.UserID)
 		assert.Nil(t, got)
 		assert.Error(t, err)
-		assert.Equal(t, "had an test error", err.Error())
+		assert.Equal(t, "had an tests error", err.Error())
 	})
 
 	t.Run("Get OTP get pass", func(t *testing.T) {
