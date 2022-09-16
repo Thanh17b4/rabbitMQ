@@ -3,6 +3,7 @@ package repo_test
 import (
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/Thanh17b4/practice/model"
@@ -20,9 +21,9 @@ var (
 )
 
 func TestUser_Create(t *testing.T) {
-	resource, pool, db := SetupDB()
-	defer closeContainer(resource, pool)
-
+	db, err := SetupDB()
+	require.NoError(t, err)
+	defer cleanUpDB(db)
 	tests := []struct {
 		name    string
 		user    model.User
@@ -62,9 +63,7 @@ func TestUser_Create(t *testing.T) {
 				t.Errorf("userRepo.Create got: %v, but expected: %v", err, tc.wantErr)
 				return
 			}
-			if actual != nil {
-				assert.Equal(t, tc.want, actual)
-			}
+			assert.Equal(t, tc.want, actual)
 		})
 	}
 }
