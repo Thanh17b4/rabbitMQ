@@ -2,21 +2,16 @@ package repo_test
 
 import (
 	"errors"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
-	"github.com/Thanh17b4/practice/repo"
-	"gotest.tools/assert"
-
 	"github.com/Thanh17b4/practice/model"
-	dbtest "github.com/Thanh17b4/practice/tests/docker_test"
+	"github.com/Thanh17b4/practice/repo"
 )
 
 var (
-	util *dbtest.TestUtil
-
-	userID = 3
-	user   = model.User{
-		ID:       userID,
+	user = model.User{
+		ID:       3,
 		Name:     "Test",
 		Email:    "test@gmail.com",
 		Password: "abc-xyz",
@@ -24,19 +19,9 @@ var (
 	}
 )
 
-func init() {
-	dbTest := dbtest.New()
-	if err := dbTest.InitDB(); err != nil {
-		dbTest.Log.Panicf("testutil.initDB(): %v", err)
-	}
-	util = dbTest
-}
-
 func TestUser_Create(t *testing.T) {
-	if err := util.SetupDB(); err != nil {
-		util.Log.Panicf("util.SetupDB(): %v", err)
-	}
-	defer util.CleanAndClose()
+	resource, pool, db := SetupDB()
+	defer closeContainer(resource, pool)
 
 	tests := []struct {
 		name    string
@@ -45,49 +30,41 @@ func TestUser_Create(t *testing.T) {
 		want    *model.User
 	}{
 		{
-			name: "error: wrong user id",
-			user: model.User{
-				ID:       -1,
+			name: "success: insert user successfully",
+			user: user,
+			want: &model.User{
+				ID:       3,
 				Name:     "Test",
 				Email:    "test@gmail.com",
 				Password: "abc-xyz",
 				Username: "abc-xyz",
 			},
-			wantErr: errors.New(`gsd`),
-			want:    nil,
 		},
 		{
-			name: "error: when duplicate email",
+			name: "error: email userID",
 			user: model.User{
-				ID:       2,
+				ID:       4,
+				Name:     "Test",
 				Email:    "test@gmail.com",
-				Password: "abc-xyz",
-				Username: "abc-xyz",
+				Password: "abc-test",
+				Username: "abc-kka",
 			},
-			wantErr: errors.New(`sgsdkkh"`),
+			wantErr: errors.New(`could not creat new user: Error 1062: Duplicate entry 'test@gmail.com' for key 'users_email_unique'`),
 			want:    nil,
-		},
-		{
-			name: "success",
-			user: model.User{
-				ID:       2,
-				Email:    "test2@gmail.com",
-				Password: "abc-xyz",
-				Username: "abc-xyz",
-			},
-			want: &user,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			userRepo := repo.NewUser(util.DB)
+			userRepo := repo.NewUser(db)
 			actual, err := userRepo.Create(&tc.user)
 			if err != nil && err.Error() != tc.wantErr.Error() {
-				t.Errorf("taskRepo.Create got: %v, but expected: %v", err, tc.wantErr)
+				t.Errorf("userRepo.Create got: %v, but expected: %v", err, tc.wantErr)
 				return
 			}
-			assert.Equal(t, tc.want, actual)
+			if actual != nil {
+				assert.Equal(t, tc.want, actual)
+			}
 		})
 	}
 }
