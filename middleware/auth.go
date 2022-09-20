@@ -24,6 +24,6 @@ func RequestToken(next http.Handler) http.Handler {
 		//			return
 		//		}
 		//		//Call the next handler, which can be another middleware in the chain, or the final handler.
-		//		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	})
 }

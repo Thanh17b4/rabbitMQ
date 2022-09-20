@@ -3,6 +3,7 @@ package main
 import (
 	_ "database/sql"
 	"fmt"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"log"
 	"net/http"
 
@@ -15,11 +16,31 @@ import (
 )
 
 func main() {
-	sqlDns := "root:221292@tcp(localhost:13306)/token_service?parseTime=true"
+	sqlDns := "root:12345@(127.0.0.1:3306)/token?parseTime=true"
 	db, err := db.NewDB(sqlDns)
 	if err != nil {
 		fmt.Println("can not connect to database:", err.Error())
 	}
+
+	// migrate database
+	//driver, _ := mysql.WithInstance(db, &mysql.Config{})
+	//migrateOps, err := migrate.NewWithDatabaseInstance(
+	//	"file://./db/migrations",
+	//	"token",
+	//	driver,
+	//)
+	//
+	//logrus.Infof("End init migrate")
+	//if err != nil {
+	//	fmt.Println("could not migrateDB: ", err.Error())
+	//	return
+	//}
+	//
+	//err = migrateOps.Steps(2)
+	//if err != nil {
+	//	log.Fatal("could not migrateDB: ", err.Error())
+	//	return
+	//}
 
 	userRepo := repo.NewUser(db)
 	userService := service.NewUserService(userRepo)

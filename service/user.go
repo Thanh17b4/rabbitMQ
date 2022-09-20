@@ -79,10 +79,9 @@ func (s UserService) GetListUser(page int64, limit int64) ([]*model.User, error)
 
 func (s UserService) GetDetailUser(userID int64) (*model.User, error) {
 	return s.userRepo.DetailUser(userID)
-
 }
-func (s UserService) UpdateUserService(user *model.User) (*model.User, error) {
 
+func (s UserService) UpdateUserService(user *model.User) (*model.User, error) {
 	if user.Username == "" || user.Name == "" || user.Email == "" || user.Password == "" || user.Address == "" {
 		return nil, errors.New("required field can not empty")
 	}

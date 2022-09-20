@@ -20,7 +20,6 @@ func TestUserHandle_DeleteUserHandle(t *testing.T) {
 	userHandler := NewUserHandle(userService)
 
 	t.Run("type userID incorrect", func(t *testing.T) {
-
 		req := httptest.NewRequest("GET", "/token/users/a", nil)
 		chiCtx := chi.NewRouteContext()
 		chiCtx.URLParams.Add("id", "a")

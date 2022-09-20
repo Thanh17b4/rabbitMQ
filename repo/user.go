@@ -62,11 +62,21 @@ func (u *User) UpdateUser(user *model.User) (*model.User, error) {
 	return user, nil
 }
 func (u *User) Delete(userID int64) (int64, error) {
-	_, err := u.db.Exec("DELETE FROM users WHERE id = ?", userID)
+	result, err := u.db.Exec("DELETE FROM users WHERE id = ?", userID)
 
 	if err != nil {
 		return 0, errors.Wrap(err, "userID is not correct")
 	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "could not count row affected")
+	}
+
+	if count == 0 {
+		return 0, errors.Wrap(err, "record not found")
+	}
+
 	return userID, nil
 }
 
