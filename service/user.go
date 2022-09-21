@@ -85,10 +85,17 @@ func (s UserService) UpdateUserService(user *model.User) (*model.User, error) {
 	if user.Username == "" || user.Name == "" || user.Email == "" || user.Password == "" || user.Address == "" {
 		return nil, errors.New("required field can not empty")
 	}
-
 	_, err := s.GetDetailUser(int64(user.ID))
 	if err != nil {
 		return nil, err
+	}
+	_, err1 := s.userRepo.GetUserByEmail(user.Email)
+	if err1 == nil {
+		return nil, errors.New("Email had been used")
+	}
+	_, err2 := s.userRepo.GetUserByUsername(user.Username)
+	if err2 == nil {
+		return nil, errors.New("Username had been used")
 	}
 	hashedPassword, err := generatePassword(user.Password)
 	if err != nil {

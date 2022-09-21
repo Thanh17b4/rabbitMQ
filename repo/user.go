@@ -28,13 +28,13 @@ func (u *User) Create(user *model.User) (*model.User, error) {
 func (u *User) ListUser(page int64, limit int64) ([]*model.User, error) {
 	var users []*model.User
 	offset := (page - 1) * limit
-	result, err := u.db.Query("SELECT id, name, address FROM users LIMIT ? OFFSET ?", limit, offset)
+	result, err := u.db.Query("SELECT id, name, address, username, email FROM users LIMIT ? OFFSET ?", limit, offset)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get list user from database")
 	}
 	for result.Next() {
 		u := &model.User{}
-		err := result.Scan(&u.ID, &u.Name, &u.Address)
+		err := result.Scan(&u.ID, &u.Name, &u.Address, &u.Username, &u.Email)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not scan user information")
 		}
@@ -54,29 +54,20 @@ func (u *User) DetailUser(userID int64) (*model.User, error) {
 }
 
 func (u *User) UpdateUser(user *model.User) (*model.User, error) {
-	_, err := u.db.Exec(" UPDATE users SET name = ?, address = ?, activated = ?, username = ?, email = ?, banned = ?, protected = ?, password = ? WHERE id = ?", &user.Name, &user.Address, &user.Activated, &user.Username, &user.Email, &user.Banned, &user.Protected, &user.Password, &user.ID)
-	if err != nil {
-		return nil, errors.Wrap(err, "user's information is not correct")
+	row, err := u.db.Exec(" UPDATE users SET name = ?, address = ?, activated = ?, username = ?, email = ?, banned = ?, protected = ?, password = ? WHERE id = ?", &user.Name, &user.Address, &user.Activated, &user.Username, &user.Email, &user.Banned, &user.Protected, &user.Password, &user.ID)
+	rowAffected, err := row.RowsAffected()
+	if err != nil || rowAffected == 0 {
+		return nil, errors.Wrap(err, "Could not update user")
 	}
 	//defer u.db.Close()
 	return user, nil
 }
 func (u *User) Delete(userID int64) (int64, error) {
 	result, err := u.db.Exec("DELETE FROM users WHERE id = ?", userID)
-
-	if err != nil {
+	count, err := result.RowsAffected()
+	if err != nil || count == 0 {
 		return 0, errors.Wrap(err, "userID is not correct")
 	}
-
-	count, err := result.RowsAffected()
-	if err != nil {
-		return 0, errors.Wrap(err, "could not count row affected")
-	}
-
-	if count == 0 {
-		return 0, errors.Wrap(err, "record not found")
-	}
-
 	return userID, nil
 }
 

@@ -3,16 +3,15 @@ package main
 import (
 	_ "database/sql"
 	"fmt"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"log"
-	"net/http"
-
 	"github.com/Thanh17b4/practice/db"
 	"github.com/Thanh17b4/practice/handler"
 	"github.com/Thanh17b4/practice/middleware"
 	"github.com/Thanh17b4/practice/repo"
 	"github.com/Thanh17b4/practice/service"
 	"github.com/go-chi/chi/v5"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"log"
+	"net/http"
 )
 
 func main() {
@@ -20,9 +19,10 @@ func main() {
 	db, err := db.NewDB(sqlDns)
 	if err != nil {
 		fmt.Println("can not connect to database:", err.Error())
+		return
 	}
 
-	// migrate database
+	//migrate database
 	//driver, _ := mysql.WithInstance(db, &mysql.Config{})
 	//migrateOps, err := migrate.NewWithDatabaseInstance(
 	//	"file://./db/migrations",

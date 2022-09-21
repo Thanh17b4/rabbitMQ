@@ -23,6 +23,7 @@ var (
 
 func TestUser_Create(t *testing.T) {
 	db, err := SetupDB()
+	fmt.Println(err)
 	require.NoError(t, err)
 	defer cleanUpDB(db)
 	tests := []struct {
@@ -71,67 +72,32 @@ func TestUser_Create(t *testing.T) {
 
 func TestUser_ListUser(t *testing.T) {
 	db, err := SetupDB()
+	fmt.Println(err)
 	require.NoError(t, err)
 	defer cleanUpDB(db)
-
-	// case 1: There is no record
-	listUsers := []*model.User(nil)
-
-	t.Run("if no record", func(t *testing.T) {
-		userRepo := repo.NewUser(db)
-		got, _ := userRepo.ListUser(1, 10)
-		want := listUsers
-
-		assert.Equal(t, want, got)
-	})
-	// case 2: There are some records, add some records to db
-	t.Run("if have some records but can not get list users", func(t *testing.T) {
-		db.Exec("INSERT INTO users VALUES (1, '', '', 0, 0, 0, '', '', '')")
-		//db.Exec("INSERT INTO users VALUES (1, '', '', 0, 0, 0, '', '', '')")
-
-		listUsers = []*model.User{nil}
-
+	// no have record
+	t.Run("no have record", func(t *testing.T) {
+		//db.Exec("INSERT INTO users VALUES (1, 'thanh', 'abc@gmail.com', 0, 0, 0, 'china', '22121992', 'thanh17')")
+		listUsers := []*model.User(nil)
 		userRepo := repo.NewUser(db)
 		got, err := userRepo.ListUser(1, 10)
 		want := listUsers
-		assert.Error(t, err)
+		assert.Nil(t, err)
 		assert.Equal(t, want, got)
+
 	})
-	t.Run("if have some records", func(t *testing.T) {
-		db.Exec("INSERT INTO users VALUES (1, '', '', 0, 0, 0, '', '', '')")
-		//db.Exec("INSERT INTO users VALUES (1, '', '', 0, 0, 0, '', '', '')")
-
-		user1 := &model.User{
-			ID:        1,
-			Name:      "",
-			Email:     "",
-			Protected: 0,
-			Banned:    0,
-			Activated: 0,
-			Address:   "",
-			Password:  "",
-			Username:  "",
-		}
-		//user2 := &model.User{
-		//	ID:        2,
-		//	Name:      "",
-		//	Email:     "",
-		//	Protected: 0,
-		//	Banned:    0,
-		//	Activated: 0,
-		//	Address:   "",
-		//	Password:  "",
-		//	Username:  "",
-		//}
-
-		listUsers = []*model.User{}
-		listUsers := append(listUsers, user1)
-
+	//add some records
+	t.Run("have some records", func(t *testing.T) {
+		db.Exec("INSERT INTO users VALUES (1, 'thanh', 'abc@gmail.com', 0, 0, 0, 'china', '22121992', 'thanh17')")
+		db.Exec("INSERT INTO users VALUES (2, 'thanh', 'cdf@gmail.com', 0, 0, 0, 'china', '22121992', 'thanh18')")
+		user1 := &model.User{ID: 1, Name: "thanh", Email: "abc@gmail.com", Protected: 0, Banned: 0, Activated: 0, Address: "china", Password: "", Username: "thanh17"}
+		user2 := &model.User{ID: 2, Name: "thanh", Email: "cdf@gmail.com", Protected: 0, Banned: 0, Activated: 0, Address: "china", Password: "", Username: "thanh18"}
+		var listUsers []*model.User
+		listUsers = append(listUsers, user1, user2)
 		userRepo := repo.NewUser(db)
-		got, _ := userRepo.ListUser(1, 10)
+		got, err := userRepo.ListUser(1, 10)
 		want := listUsers
-		fmt.Println("abc", got)
-
+		assert.Nil(t, err)
 		assert.Equal(t, want, got)
 	})
 
@@ -145,35 +111,19 @@ func TestUser_DetailUser(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		user    model.User
+		userID  int
 		wantErr error
 		want    *model.User
 	}{
 		{
-			name: "error: userID invalid",
-			user: model.User{
-				ID:       4,
-				Name:     "Test",
-				Email:    "test@gmail.com",
-				Password: "abc-test",
-				Username: "abc-kka",
-			},
+			name:    "error: userID invalid",
+			userID:  100,
 			wantErr: errors.New(`userID is not correct: sql: no rows in result set`),
 			want:    nil,
 		},
 		{
-			name: "success: insert user successfully",
-			user: model.User{
-				ID:        1,
-				Name:      "",
-				Email:     "",
-				Protected: 0,
-				Banned:    0,
-				Activated: 0,
-				Address:   "",
-				Password:  "",
-				Username:  "",
-			},
+			name:   "success: insert user successfully",
+			userID: 1,
 			want: &model.User{
 				ID:        1,
 				Name:      "",
@@ -191,7 +141,7 @@ func TestUser_DetailUser(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			userRepo := repo.NewUser(db)
-			actual, err := userRepo.DetailUser(int64(tc.user.ID))
+			actual, err := userRepo.DetailUser(int64(tc.userID))
 			if err != nil && err.Error() != tc.wantErr.Error() {
 				t.Errorf("userRepo.Detail got: %v, but expected: %v", err, tc.wantErr)
 				return
@@ -201,89 +151,74 @@ func TestUser_DetailUser(t *testing.T) {
 	}
 }
 
-//func TestUser_UpdateUser(t *testing.T) {
-//	db, err := SetupDB()
-//	require.NoError(t, err)
-//	defer cleanUpDB(db)
-//	//db.Exec("INSERT INTO users VALUES (1, '', '', 0, 0, 0, '', '', 'thanh17')")
-//
-//	tests := []struct {
-//		name    string
-//		user    model.User
-//		wantErr error
-//		want    *model.User
-//	}{
-//		{
-//			name: "id invalid",
-//			user: model.User{
-//				ID:        4,
-//				Name:      "",
-//				Email:     "",
-//				Protected: 0,
-//				Banned:    0,
-//				Activated: 0,
-//				Address:   "",
-//				Password:  "",
-//				Username:  "",
-//			},
-//			wantErr: errors.New(`userID is not correct: sql: no rows in result set`),
-//			want:    nil,
-//		},
-//		//{
-//		//	name: "One of the unique field is duplicate",
-//		//	user: model.User{
-//		//		ID:        1,
-//		//		Name:      "",
-//		//		Email:     "",
-//		//		Protected: 0,
-//		//		Banned:    0,
-//		//		Activated: 0,
-//		//		Address:   "",
-//		//		Password:  "",
-//		//		Username:  "",
-//		//	},
-//		//	wantErr: errors.New(`could not update user`),
-//		//	want:    nil,
-//		//},
-//		//{
-//		//	name: "success: insert user successfully",
-//		//	user: model.User{
-//		//		ID:        1,
-//		//		Name:      "thanh",
-//		//		Email:     "abc@gmail.com",
-//		//		Protected: 0,
-//		//		Banned:    0,
-//		//		Activated: 0,
-//		//		Address:   "china",
-//		//		Password:  "221293",
-//		//		Username:  "thanh17b4",
-//		//	},
-//		//	want: &model.User{
-//		//		ID:        1,
-//		//		Name:      "thanh",
-//		//		Email:     "abc@gmail.com",
-//		//		Protected: 0,
-//		//		Banned:    0,
-//		//		Activated: 0,
-//		//		Address:   "china",
-//		//		Password:  "221293",
-//		//		Username:  "thanh17b4",
-//		//	},
-//		//},
-//	}
-//
-//	for _, tc := range tests {
-//		t.Run(tc.name, func(t *testing.T) {
-//			userRepo := repo.NewUser(db)
-//			actual, err := userRepo.UpdateUser(&tc.user)
-//			if err != nil && err.Error() != tc.wantErr.Error() {
-//				t.Errorf("userRepo.Update got: %v, but expected: %v", err, tc.wantErr)
-//				return
-//			}
-//			assert.Equal(t, tc.want, actual)
-//		})
-//	}
-//}
+func TestUser_UpdateUser(t *testing.T) {
+	db, err := SetupDB()
+	require.NoError(t, err)
+	defer cleanUpDB(db)
+	db.Exec("INSERT INTO users VALUES (1, 'thanh', 'abc@gmail.com', 0, 0, 0, 'china', '22121992', 'thanh17')")
+
+	tests := []struct {
+		name    string
+		user    model.User
+		wantErr error
+		want    *model.User
+	}{
+		{
+			name: "id invalid",
+			user: model.User{
+				ID:        4,
+				Name:      "thanh",
+				Email:     "abc@gmail.com",
+				Protected: 0,
+				Banned:    0,
+				Activated: 0,
+				Address:   "china",
+				Password:  "22121992",
+				Username:  "thanh17",
+			},
+			wantErr: errors.New(`userID is not correct: sql: no rows in result set`),
+			want:    nil,
+		},
+
+		{
+			name: "success: insert user successfully",
+			user: model.User{
+				ID:        1,
+				Name:      "thanh",
+				Email:     "abc@gmail.com",
+				Protected: 0,
+				Banned:    0,
+				Activated: 0,
+				Address:   "china",
+				Password:  "221293",
+				Username:  "thanh17b4",
+			},
+			want: &model.User{
+				ID:        1,
+				Name:      "thanh",
+				Email:     "abc@gmail.com",
+				Protected: 0,
+				Banned:    0,
+				Activated: 0,
+				Address:   "china",
+				Password:  "221293",
+				Username:  "thanh17b4",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			userRepo := repo.NewUser(db)
+			actual, err := userRepo.UpdateUser(&tc.user)
+			if err != nil && err.Error() != tc.wantErr.Error() {
+				t.Errorf("userRepo.Update got: %v, but expected: %v", err, tc.wantErr)
+				return
+			}
+			assert.Equal(t, tc.want, actual)
+		})
+	}
+}
 
 func TestUser_Delete(t *testing.T) {
 	db, err := SetupDB()
@@ -314,15 +249,144 @@ func TestUser_Delete(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			userRepo := repo.NewUser(db)
 			actual, err := userRepo.Delete(tc.userID)
-			if err != nil {
-				fmt.Println("eeeeeee: ", err.Error())
-			}
 			if err != nil && err.Error() != tc.wantErr.Error() {
 				t.Errorf("userRepo.Detail got: %v, but expected: %v", err, tc.wantErr)
 				return
 			}
 			assert.Equal(t, tc.want, actual)
 
+		})
+	}
+}
+
+func TestUser_GetUserByEmail(t *testing.T) {
+	db, err := SetupDB()
+	require.NoError(t, err)
+	defer cleanUpDB(db)
+	db.Exec("INSERT INTO users VALUES (1, 'thanh', 'abc@gmail.com', 0, 0, 0, '', '', '')")
+
+	tests := []struct {
+		name    string
+		email   string
+		wantErr error
+		want    *model.User
+	}{
+		{
+			name:    "error: email invalid",
+			email:   "cdf@gmail.com",
+			wantErr: errors.New(`email is not correct, please try again: sql: no rows in result set`),
+			want:    nil,
+		},
+		{
+			name:  "success: get detail user successfully",
+			email: "abc@gmail.com",
+			want: &model.User{
+				ID:        1,
+				Name:      "thanh",
+				Email:     "abc@gmail.com",
+				Protected: 0,
+				Banned:    0,
+				Activated: 0,
+				Address:   "",
+				Password:  "",
+				Username:  "",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			userRepo := repo.NewUser(db)
+			actual, err := userRepo.GetUserByEmail(tc.email)
+			if err != nil && err.Error() != tc.wantErr.Error() {
+				t.Errorf("userRepo.DetailByEmail got: %v, but expected: %v", err, tc.wantErr)
+				return
+			}
+			assert.Equal(t, tc.want, actual)
+		})
+	}
+}
+
+func TestUser_GetUserByUsername(t *testing.T) {
+	db, err := SetupDB()
+	require.NoError(t, err)
+	defer cleanUpDB(db)
+	db.Exec("INSERT INTO users VALUES (1, 'thanh', 'abc@gmail.com', 0, 0, 0, '', '', 'thanh17')")
+
+	tests := []struct {
+		name     string
+		username string
+		wantErr  error
+		want     *model.User
+	}{
+		{
+			name:     "error: username invalid",
+			username: "thanh18",
+			wantErr:  errors.New(`username is not correct, please try again: sql: no rows in result set`),
+			want:     nil,
+		},
+		{
+			name:     "success: get detail user successfully",
+			username: "thanh17",
+			want: &model.User{
+				ID:        1,
+				Name:      "thanh",
+				Email:     "abc@gmail.com",
+				Protected: 0,
+				Banned:    0,
+				Activated: 0,
+				Address:   "",
+				Password:  "",
+				Username:  "",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			userRepo := repo.NewUser(db)
+			actual, err := userRepo.GetUserByUsername(tc.username)
+			if err != nil && err.Error() != tc.wantErr.Error() {
+				t.Errorf("userRepo.DetailByUsername got: %v, but expected: %v", err, tc.wantErr)
+				return
+			}
+			assert.Equal(t, tc.want, actual)
+		})
+	}
+}
+
+func TestUser_CountUsers(t *testing.T) {
+	db, err := SetupDB()
+	require.NoError(t, err)
+	defer cleanUpDB(db)
+	db.Exec("INSERT INTO users VALUES (1, 'thanh', 'abc@gmail.com', 0, 0, 0, '', '', 'thanh17')")
+
+	tests := []struct {
+		name    string
+		wantErr error
+		want    int64
+	}{
+		{
+			name:    "error: could not count users",
+			wantErr: errors.New(`could not count users`),
+			want:    1,
+		},
+		{
+			name:    "success: count user successfully",
+			wantErr: nil,
+			want:    1,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			userRepo := repo.NewUser(db)
+			actual, err := userRepo.CountUsers()
+			if err != nil && err.Error() != tc.wantErr.Error() {
+				t.Errorf("userRepo.Count got: %v, but expected: %v", err, tc.wantErr)
+				return
+			}
+			assert.Equal(t, tc.want, actual)
 		})
 	}
 }
