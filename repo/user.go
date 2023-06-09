@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Thanh17b4/practice/model"
+	"Thanh17b4/practice/model"
 )
 
 type User struct {
@@ -59,7 +59,7 @@ func (u *User) UpdateUser(user *model.User) (*model.User, error) {
 	if err != nil || rowAffected == 0 {
 		return nil, errors.Wrap(err, "Could not update user")
 	}
-	//defer u.db.Close()
+	//defer u.database.Close()
 	return user, nil
 }
 func (u *User) Delete(userID int64) (int64, error) {

@@ -3,44 +3,50 @@ package main
 import (
 	_ "database/sql"
 	"fmt"
-	"github.com/Thanh17b4/practice/db"
-	"github.com/Thanh17b4/practice/handler"
-	"github.com/Thanh17b4/practice/middleware"
-	"github.com/Thanh17b4/practice/repo"
-	"github.com/Thanh17b4/practice/service"
-	"github.com/go-chi/chi/v5"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	"Thanh17b4/practice/database"
+	"Thanh17b4/practice/handler"
+	"Thanh17b4/practice/middleware"
+	"Thanh17b4/practice/repo"
+	"Thanh17b4/practice/service"
 )
 
 func main() {
-	sqlDns := "root:12345@(127.0.0.1:3306)/token?parseTime=true"
-	db, err := db.NewDB(sqlDns)
+	sqlDns := "root:admin@(127.0.0.1:3306)/token?parseTime=true"
+	db, err := database.NewDB(sqlDns)
 	if err != nil {
 		fmt.Println("can not connect to database:", err.Error())
+		return
+	}
+
+	if err1 != nil {
 		return
 	}
 
 	//migrate database
 	//driver, _ := mysql.WithInstance(db, &mysql.Config{})
 	//migrateOps, err := migrate.NewWithDatabaseInstance(
-	//	"file://./db/migrations",
+	//	"file://./database/migrations",
 	//	"token",
 	//	driver,
 	//)
 	//
-	//logrus.Infof("End init migrate")
 	//if err != nil {
 	//	fmt.Println("could not migrateDB: ", err.Error())
 	//	return
 	//}
 	//
-	//err = migrateOps.Steps(2)
+	//err = migrateOps.Steps(6)
 	//if err != nil {
 	//	log.Fatal("could not migrateDB: ", err.Error())
 	//	return
 	//}
+	//logrus.Infof("End init migrate")
 
 	userRepo := repo.NewUser(db)
 	userService := service.NewUserService(userRepo)
@@ -53,9 +59,10 @@ func main() {
 
 	loginService := service.NewLogin(otpRepo, userRepo)
 	loginHandle := handler.NewLoginHandle(loginService)
-
-	activateService := service.NewActivate(otpRepo, userRepo)
-	activateHandle := handler.NewActivateHandle(activateService)
+	//
+	activateRepo := repo.NewActivate(db)
+	activateService := service.NewActivate(activateRepo, userRepo, otpRepo)
+	activateHandle := handler.NewActivateHandler(activateService)
 
 	r := chi.NewRouter()
 	r.Post("/users/login", loginHandle.Login)
@@ -67,13 +74,11 @@ func main() {
 			r.Get("/{id}", userHandle.GetDetailUserHandle)
 			r.Delete("/{id}", userHandle.DeleteUserHandle)
 			r.Post("/refresh", loginHandle.Refresh)
-
 		})
 	})
-
 	r.Post("/users/register", userHandle.CreatUserHandle)
 	r.Post("/users_otp/register/otp", otpHandle.CreatUserOTPHandle)
-	r.Post("/users/login/active", activateHandle.Active)
-
+	//r.Put("/users/login/active", activateHandle.Active)
+	r.Put("/users/login/active", activateHandle.Active)
 	log.Fatal(http.ListenAndServe(":4000", r))
 }

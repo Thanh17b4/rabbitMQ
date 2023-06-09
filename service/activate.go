@@ -1,33 +1,39 @@
 package service
 
 import (
+	_ "Thanh17b4/practice/model"
+	_ "database/sql"
 	"errors"
 	"time"
 )
 
+type ActivateRepo interface {
+	Activate(code int, email string) (int, error)
+}
 type ActivateService struct {
-	otpRepo  OtpRepo
-	userRepo UserRepo
+	a ActivateRepo
+	u UserRepo
+	o OtpRepo
 }
 
-func NewActivate(otpRepo OtpRepo, userRepo UserRepo) *ActivateService {
-	return &ActivateService{otpRepo: otpRepo, userRepo: userRepo}
+func NewActivate(a ActivateRepo, u UserRepo, o OtpRepo) *ActivateService {
+	return &ActivateService{a: a, u: u, o: o}
 }
-func (l *ActivateService) Activate(code int, email string) (string, error) {
-	user, err := l.userRepo.GetUserByEmail(email)
+func (l *ActivateService) Activate(code int, email string) (int, error) {
+	user, err := l.u.GetUserByEmail(email)
 	if err != nil {
-		return "", errors.New("email is not valid")
+		return 0, errors.New("email is not valid")
 	}
-	userOtp, err := l.otpRepo.GetUserOTP(user.ID)
+	userOtp, err := l.o.GetUserOTP(user.ID)
 	if err != nil {
-		return "", errors.New("userID is not valid")
+		return 0, errors.New("userID is not valid")
 	}
 	if code != userOtp.OTP {
-		return "", errors.New("OTP is not correct")
+		return 0, errors.New("OTP is not correct")
 	}
 	t := time.Now()
 	if t.After(userOtp.Expired) {
-		return "", errors.New("OTP was expired")
+		return 0, errors.New("OTP was expired")
 	}
-	return "Welcome", nil
+	return l.a.Activate(code, email)
 }

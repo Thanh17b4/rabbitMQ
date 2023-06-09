@@ -1,24 +1,24 @@
 package handler
 
 import (
+	"Thanh17b4/practice/handler/responses"
 	"encoding/json"
+	_ "github.com/go-chi/chi/v5"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/Thanh17b4/practice/handler/responses"
 )
 
 type ActivateService interface {
-	Activate(code int, email string) (u string, err error)
+	Activate(code int, email string) (u int, err error)
 }
-type ActivateHandle struct {
+type ActivateHandler struct {
 	activateService ActivateService
 }
 
-func NewActivateHandle(activateService ActivateService) *ActivateHandle {
-	return &ActivateHandle{activateService: activateService}
+func NewActivateHandler(activateService ActivateService) *ActivateHandler {
+	return &ActivateHandler{activateService: activateService}
 }
-func (lh ActivateHandle) Active(w http.ResponseWriter, r *http.Request) {
+func (lh ActivateHandler) Active(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	type Req struct {
 		Email string `json:"email"`

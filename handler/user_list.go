@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Thanh17b4/practice/handler/responses"
+	"Thanh17b4/practice/handler/responses"
 )
 
 func (h UserHandle) GetListUser(w http.ResponseWriter, r *http.Request) {

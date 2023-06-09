@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="token_service@localhost" uuid="05423a51-dca0-41a8-8623-d318c54dd22d">
+    <data-source source="LOCAL" name="token@127.0.0.1" uuid="650a0df9-d44a-4316-88be-a880fa209814">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306/token_service</jdbc-url>
+      <jdbc-url>jdbc:mysql://127.0.0.1:3306/token</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

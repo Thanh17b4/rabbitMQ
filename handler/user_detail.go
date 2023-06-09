@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Thanh17b4/practice/handler/responses"
+	"Thanh17b4/practice/handler/responses"
 	"github.com/go-chi/chi/v5"
 )
 

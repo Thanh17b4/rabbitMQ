@@ -1,18 +1,17 @@
 package service
 
 import (
+	model "Thanh17b4/practice/model"
 	"crypto/tls"
 	"fmt"
-	"math/rand"
-	"time"
-
-	model "github.com/Thanh17b4/practice/model"
 	"github.com/pkg/errors"
 	goMail "gopkg.in/mail.v2"
+	"math/rand"
+	"time"
 )
 
 type OtpRepo interface {
-	CreatOTP(otp *model.UserOTP) (*model.UserOTP, error)
+	CreatOTP(email string) (*model.UserOTP, error)
 	GetUserOTP(userID int) (*model.UserOTP, error)
 }
 
@@ -40,25 +39,49 @@ func (s OtpService) sendEmail(code int64, subject string, receive string, name s
 	}
 	return
 }
-func (s OtpService) CreatOTPs(userOTP *model.UserOTP) (*model.UserOTP, error) {
-	//var user *model.User
+
+//func (s OtpService) CreatOTPs(userOTP *model.UserOTP) (*model.UserOTP, error) {
+//	//var userOTP *model.UserOTP
+//	//user, err := s.userRepo.GetUserByEmail(email)
+//	user, err := s.userRepo.DetailUser(int64(userOTP.UserID))
+//	if err != nil {
+//		return nil, errors.Wrap(err, "user is not exist")
+//	}
+//	userOTP.CreatAt = time.Now()
+//	userOTP.Expired = userOTP.CreatAt.Add(time.Second * 300)
+//	min, max := 100000, 999999
+//	code := rand.Intn(max-min) + min
+//
+//	userOTP.OTP = code
+//	receive := user.Email
+//	name := user.Name
+//	userOTP.UserID = user.ID
+//	// send email
+//	s.sendEmail(int64(code), "tests send email", receive, name)
+//	return s.otpRepo.CreatOTP(userOTP)
+//}
+
+func (s OtpService) GetOTPs(userID int) (*model.UserOTP, error) {
+	return s.otpRepo.GetUserOTP(userID)
+}
+
+func (s OtpService) CreatOTPs(email string) (*model.UserOTP, error) {
+	var userOTP *model.UserOTP
+	user, err := s.userRepo.GetUserByEmail(email)
+	//user, err := s.userRepo.DetailUser(int64(userOTP.UserID))
+	if err != nil {
+		return nil, errors.Wrap(err, "user is not exist")
+	}
 	userOTP.CreatAt = time.Now()
 	userOTP.Expired = userOTP.CreatAt.Add(time.Second * 300)
 	min, max := 100000, 999999
 	code := rand.Intn(max-min) + min
 
 	userOTP.OTP = code
-	user, err := s.userRepo.DetailUser(int64(userOTP.UserID))
-	if err != nil {
-		return nil, errors.Wrap(err, "userID is not valid")
-	}
 	receive := user.Email
 	name := user.Name
+	userOTP.UserID = user.ID
 	// send email
 	s.sendEmail(int64(code), "tests send email", receive, name)
-	return s.otpRepo.CreatOTP(userOTP)
-}
-
-func (s OtpService) GetOTPs(userID int) (*model.UserOTP, error) {
-	return s.otpRepo.GetUserOTP(userID)
+	return s.otpRepo.CreatOTP(email)
 }

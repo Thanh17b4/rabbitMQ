@@ -1,7 +1,7 @@
 package service
 
 import (
-	model "github.com/Thanh17b4/practice/model"
+	model "Thanh17b4/practice/model"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,7 +17,8 @@ type UserRepo interface {
 	CountUsers() (int64, error)
 }
 type UserService struct {
-	userRepo UserRepo
+	userRepo  UserRepo
+	queueName string
 }
 
 func NewUserService(userRepo UserRepo) *UserService {
@@ -110,4 +111,8 @@ func (s UserService) DeleteUser(userID int64) (int64, error) {
 		return 0, err
 	}
 	return s.userRepo.Delete(userID)
+}
+
+func (s UserService) GetDetailUserByEmail(email string) (*model.User, error) {
+	return s.userRepo.GetUserByEmail(email)
 }

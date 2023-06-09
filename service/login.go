@@ -2,10 +2,9 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/Thanh17b4/practice/model"
+	"Thanh17b4/practice/model"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -67,7 +66,6 @@ func (l LoginService) Activate(number int) (string, error) {
 func (l LoginService) Login(email string, password string) (string, error) {
 	user, err1 := l.userRepo.GetUserByEmail(email)
 	if err1 != nil {
-		fmt.Println("kkkk", err1.Error())
 		return "", errors.New("could not find email in database")
 	}
 	_, err2 := l.CompareHashAndPassword(user.Password, password)
